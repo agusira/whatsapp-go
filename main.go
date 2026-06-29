@@ -21,7 +21,7 @@ import (
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
-	"go.mau.fi/whatsmeow/types"
+	// "go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
 	// "google.golang.org/protobuf/proto"
@@ -54,6 +54,21 @@ func main() {
 	clientLog := waLog.Stdout("Client", logger, true)
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 
+	// call event handler
+	call := meowcaller.NewClient(client)
+	call.OnIncomingCall(func(c *meowcaller.Call) {
+		if err := c.Answer(); err != nil {
+			fmt.Println(err)
+			return
+		}
+		aud, err := meowcaller.MP3File("./call.mp3")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		c.Play(aud)
+	})
+
 	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_CHROME.Enum()
 	store.SetOSInfo(*deviceName, [3]uint32{2, 3000, 1031080782})
 
@@ -66,13 +81,8 @@ func main() {
 			go handler.Handler(conn, m)
 		case *events.Connected:
 			fmt.Println("[!] Connected to Whatsapp")
-			client.SendPresence(ctx, types.PresenceAvailable)
+			// client.SendPresence(ctx, types.PresenceAvailable)
 		case *events.CallOffer:
-			fmt.Println(v.CallID)
-			call := meowcaller.NewClient(client)
-			call.OnIncomingCall(func(c *meowcaller.Call) {
-				c.Reject()
-			})
 			if configs.CONFIG.AntiCall {
 				client.RejectCall(ctx, v.From, v.CallID)
 				text := "Halo, saat ini saya sedang dalam kondisi yang tidak memungkinkan untuk menerima telepon. Mohon untuk meninggalkan pesan!"
