@@ -18,7 +18,7 @@ import (
 	meowcaller "github.com/purpshell/meowcaller"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waCompanionReg"
-	"go.mau.fi/whatsmeow/proto/waE2E"
+	// "go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	// "go.mau.fi/whatsmeow/types"
@@ -55,18 +55,30 @@ func main() {
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 
 	// call event handler
-	call := meowcaller.NewClient(client)
-	call.OnIncomingCall(func(c *meowcaller.Call) {
+	caller := meowcaller.NewClient(client)
+	caller.OnIncomingCall(func(c *meowcaller.Call) {
+		var play *meowcaller.Player
 		if err := c.Answer(); err != nil {
 			fmt.Println(err)
 			return
 		}
-		aud, err := meowcaller.MP3File("./call.mp3")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		c.Play(aud)
+		c.OnReady(func() {
+			aud, err := meowcaller.MP3File("./call.mp3")
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			play = c.Play(aud)
+			c.OnEnd(func(reason string) {
+				fmt.Println(reason)
+				play.Stop()
+			})
+			play.OnFinish(func() {
+				if err := c.Hangup(); err != nil {
+					fmt.Println(err)
+				}
+			})
+		})
 	})
 
 	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_CHROME.Enum()
@@ -82,26 +94,26 @@ func main() {
 		case *events.Connected:
 			fmt.Println("[!] Connected to Whatsapp")
 			// client.SendPresence(ctx, types.PresenceAvailable)
-		case *events.CallOffer:
-			if configs.CONFIG.AntiCall {
-				client.RejectCall(ctx, v.From, v.CallID)
-				text := "Halo, saat ini saya sedang dalam kondisi yang tidak memungkinkan untuk menerima telepon. Mohon untuk meninggalkan pesan!"
-				client.SendMessage(ctx, v.From, &waE2E.Message{
-					ExtendedTextMessage: &waE2E.ExtendedTextMessage{
-						Text: &text,
-						ContextInfo: &waE2E.ContextInfo{
-							QuotedMessage: &waE2E.Message{
-								Call: &waE2E.Call{
-									ContextInfo: &waE2E.ContextInfo{
-										StanzaID:    &v.CallID,
-										Participant: &v.From.User,
-									},
-								},
-							},
-						},
-					},
-				})
-			}
+			// case *events.CallOffer:
+			// 	if configs.CONFIG.AntiCall {
+			// 		client.RejectCall(ctx, v.From, v.CallID)
+			// 		text := "Halo, saat ini saya sedang dalam kondisi yang tidak memungkinkan untuk menerima telepon. Mohon untuk meninggalkan pesan!"
+			// 		client.SendMessage(ctx, v.From, &waE2E.Message{
+			// 			ExtendedTextMessage: &waE2E.ExtendedTextMessage{
+			// 				Text: &text,
+			// 				ContextInfo: &waE2E.ContextInfo{
+			// 					QuotedMessage: &waE2E.Message{
+			// 						Call: &waE2E.Call{
+			// 							ContextInfo: &waE2E.ContextInfo{
+			// 								StanzaID:    &v.CallID,
+			// 								Participant: &v.From.User,
+			// 							},
+			// 						},
+			// 					},
+			// 				},
+			// 			},
+			// 		})
+			// 	}
 		}
 	})
 

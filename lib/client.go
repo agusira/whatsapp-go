@@ -28,12 +28,12 @@ func SerializeClient(sock *whatsmeow.Client) *IClient {
 }
 
 func generateMessageID() types.MessageID {
-	id := make([]byte, 14)
+	id := make([]byte, 15)
 	_, err := rand.Read(id)
 	if err != nil {
 		panic(err)
 	}
-	return strings.ToUpper(hex.EncodeToString(id)) + "-GUZ"
+	return "AC" + strings.ToUpper(hex.EncodeToString(id))
 }
 func (c *IClient) ParseMention(text string) []string {
 	res := []string{}

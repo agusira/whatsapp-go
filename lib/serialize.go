@@ -106,7 +106,7 @@ func Serialize(msg *events.Message, conn *IClient) *M {
 	m.ID = msg.Info.ID
 	m.IsGroup = msg.Info.IsGroup
 	m.IsFromMe = msg.Info.IsFromMe
-	m.IsOwner = Includes(m.Sender.User, configs.CONFIG.Owner...) || m.IsFromMe
+	m.IsOwner = Includes(m.Sender.User, configs.CONFIG.Owner...) || Includes(msg.Info.SenderAlt.User, configs.CONFIG.Owner...) || m.IsFromMe
 	m.PushName = msg.Info.PushName
 	m.Prefix = configs.CONFIG.Prefix
 	m.Args = strings.Split(m.Text, " ")[1:]
