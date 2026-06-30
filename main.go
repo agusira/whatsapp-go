@@ -70,7 +70,6 @@ func main() {
 			}
 			play = c.Play(aud)
 			c.OnEnd(func(reason string) {
-				fmt.Println(reason)
 				play.Stop()
 			})
 			play.OnFinish(func() {
