@@ -45,6 +45,7 @@ func init() {
 						return
 					}
 					m.Reply("Berhasil Mengeluarkan Member")
+					return
 				} else {
 					m.Reply("Example: kick 62xxx or Reply Target")
 					return

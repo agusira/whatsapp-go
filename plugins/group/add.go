@@ -41,9 +41,9 @@ func init() {
 					m.Reply("Berhasil Menambahkan Member Baru")
 				} else {
 					m.Reply("Example: add 62xxx")
+					return
 				}
 			}
-			return
 		},
 	})
 }

@@ -26,9 +26,9 @@ func GetList() []Plugins {
 }
 
 func GetMenu() string {
-	var str string
+	var str strings.Builder
 	var tags map[string][]item
-	str += "*LIST COMMAND*\n\n"
+	str.WriteString("*LIST COMMAND*\n\n")
 	for _, cmd := range list {
 		if tags == nil {
 			tags = make(map[string][]item)
@@ -41,13 +41,14 @@ func GetMenu() string {
 	}
 	for key := range tags {
 		count := 1
-		str += fmt.Sprintf("┏━❰ *%s* ❱\n", key)
+		fmt.Fprintf(&str, "┏━❰ *%s* ❱\n", key)
+		// str += fmt.Sprintf("┏━❰ *%s* ❱\n", key)
 		for _, e := range tags[key] {
-			str += fmt.Sprintf("┃➣ %d. %s\n", count, e.Cmd)
+			fmt.Fprintf(&str, "┃➣ %d. %s\n", count, e.Cmd)
 			count++
 		}
-		str += "┗━━━━━━━━━━━⦿\n"
+		fmt.Fprint(&str, "┗━━━━━━━━━━━⦿\n")
 
 	}
-	return str
+	return str.String()
 }

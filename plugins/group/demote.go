@@ -48,9 +48,9 @@ func init() {
 					m.Reply("Berhasil Memberhentikan Admin")
 				} else {
 					m.Reply("Example: add 62xxx")
+					return
 				}
 			}
-			return
 		},
 	})
 }
