@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/purpshell/meowcaller"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
@@ -16,14 +17,16 @@ import (
 )
 
 type IClient struct {
-	WA *whatsmeow.Client
+	WA     *whatsmeow.Client
+	Caller *meowcaller.Client
 }
 
 var background = context.Background()
 
-func SerializeClient(sock *whatsmeow.Client) *IClient {
+func SerializeClient(sock *whatsmeow.Client, caller *meowcaller.Client) *IClient {
 	return &IClient{
-		WA: sock,
+		WA:     sock,
+		Caller: caller,
 	}
 }
 
@@ -43,6 +46,12 @@ func (c *IClient) ParseMention(text string) []string {
 	}
 	return res
 }
+
+// Call func
+func (conn *IClient) Call(jid string) (*meowcaller.Call, error) {
+	return conn.Caller.Call(background, jid)
+}
+
 func (conn *IClient) SendInteractive(from types.JID, text string, opt *waE2E.ContextInfo) {
 	msg := &waE2E.Message{
 		InteractiveMessage: &waE2E.InteractiveMessage{

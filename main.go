@@ -69,6 +69,7 @@ func main() {
 				return
 			}
 			play = c.Play(aud)
+			defer play.Stop()
 			c.OnEnd(func(reason string) {
 				play.Stop()
 			})
@@ -86,7 +87,7 @@ func main() {
 	client.AddEventHandler(func(evt any) {
 		switch v := evt.(type) {
 		case *events.Message:
-			conn := lib.SerializeClient(client)
+			conn := lib.SerializeClient(client, caller)
 			m := lib.Serialize(v, conn)
 
 			go handler.Handler(conn, m)
